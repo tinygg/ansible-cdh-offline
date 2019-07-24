@@ -1,0 +1,27 @@
+---
+# defaults file for ansible-cdh-offline
+vars:
+  cdh_v: 5
+  cdh_version: 5.16.1
+  cdh_base_url: "https://archive.cloudera.com"
+  cdh_repo_url_cm: "{{ cdh_base_url }}/cm{{cdh_v}}/repo-as-tarball/{{ cdh_version }}"
+  cdh_repo_url_cdh: "{{ cdh_base_url }}/cdh{{cdh_v}}/repo-as-tarball/{{ cdh_version }}"
+  # centos5/6/7 support
+  cdh_install_os: centos7
+  cdh_repo_file_gz: "cm{{ cdh_version }}-{{ cdh_install_os}}.tar.gz"
+  cdh_repo_file_md5: "{{ cdh_repo_file_gz}}.md5"
+  cdh_repo_file_sha1: "{{ cdh_repo_file_gz}}.sha1"
+  
+  cdh_manager: no
+  cdh_agent: no
+  cdh_datanode: no
+  server_host: localhost
+  server_port: 7182
+
+  db_type: mysql
+  db_name: scm
+  db_host: localhost
+  db_port: 3306
+  db_user: root
+  db_pass: root123
+  agent_use_tls: 0

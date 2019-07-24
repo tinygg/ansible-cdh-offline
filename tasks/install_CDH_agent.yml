@@ -1,0 +1,45 @@
+---
+
+- name: "Modifying Clients to Use the Internal Repository"
+  template:
+    src: "cloudera-repo.repo.j2"
+    dest: "/etc/yum.repos.d/cloudera-repo.repo"
+
+# sudo yum install cloudera-manager-daemons cloudera-manager-agent
+- name: "Install the Cloudera Manager agent"
+  yum:
+    name: ["cloudera-manager-daemons", "cloudera-manager-agent"]
+    state: present
+
+# configure the Cloudera Manager Agent to point to the Cloudera Manager Server
+# /etc/cloudera-scm-agent/config.ini
+#[General]
+# Hostname of the CM server.
+#server_host=localhost
+# Port that the CM server is listening on.
+#server_port=7182
+- name: "Configure the Cloudera Manager Agent to [point to] the [Cloudera Manager Server] of [server_host]"
+  lineinfile:
+    path: "/etc/cloudera-scm-agent/config.ini"
+    regexp: "^server_host="
+    line: "server_host={{ server_host }}"
+
+#- name: "Configure the Cloudera Manager Agent to [point to] the [Cloudera Manager Server] of [server_port]"
+#  lineinfile:
+#    path: "/etc/cloudera-scm-agent/config.ini"
+#    regexp: "^server_port="
+#    line: "server_port={{ server_port }}"
+
+# /etc/cloudera-scm-agent/config.ini
+# use_tls=1
+- name: "Configure the Cloudera Manager Agent of [use_tls]"
+  lineinfile:
+    path: "/etc/cloudera-scm-agent/config.ini"
+    regexp: "^use_tls="
+    line: "use_tls={{ agent_use_tls }}"
+
+# sudo systemctl start cloudera-scm-agent
+- name: "Start the Agents"
+  service:
+    name: cloudera-scm-agent
+    state: started

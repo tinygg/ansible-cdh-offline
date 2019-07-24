@@ -1,0 +1,71 @@
+---
+
+- name: PreCheck Tag CMD
+  shell: 'source /etc/profile&&echo $ORACLE_JAVA_INSTALL'
+  register: tag_rlt
+
+- name: PreCheck ORACLE_JAVA_INSTALL tag
+  debug: var=tag_rlt verbosity=0
+
+- name: Import oracle java role
+  import_role:
+    name: gikoluo.oracle-java
+  ######JDK setting(gikoluo/oracle-java)
+  vars:
+    java_version: 8
+    java_subversion: 211
+    java_download_path: /tmp
+    java_download_from_oracle: true
+    java_remove_download: true
+    jdk_tarball_url: "http://10.0.0.189:9999/files/jdk-8u211-linux-x64.tar.gz"
+    java_set_javahome: true
+    java_install_jce: false
+    java_install_dir: "/usr/lib/jvm/java-1.8"
+    java_default_link_name: default
+
+- name: Env add /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^export JAVA_HOME="
+    line: "export JAVA_HOME=/usr/lib/jvm/java-1.8/default"
+
+- name: Env add /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^export CLASSPATH="
+    line: "export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar"
+
+- name : Env add /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^export PATH="
+    line: "export PATH=$JAVA_HOME/bin:$PATH"
+
+- name : Env add /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^export LC_ALL="
+    line: "export LC_ALL='zh_CN.utf8'"
+
+- name : Env add /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^ulimit"
+    line: "ulimit -n 99999999"
+
+- name: Env add /etc/profile Java_TAG
+  lineinfile:
+    dest: /etc/profile
+    regexp: "^export ORACLE_JAVA_INSTALL"
+    line: "export ORACLE_JAVA_INSTALL=1"
+
+- name: Check Tag CMD
+  shell: 'source /etc/profile&&echo $ORACLE_JAVA_INSTALL'
+  register: tag_rlt
+
+- name: Check ORACLE_JAVA_INSTALL tag
+  debug: var=tag_rlt verbosity=0
+
+- name: Usage about tag_rlt comment
+  debug: 
+    msg: "You should not use (tag_rlt == '1') but using (tag_rlt.stdout == '1')."

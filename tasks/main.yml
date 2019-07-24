@@ -1,0 +1,76 @@
+---
+# tasks file for ansible-cdh-offline
+
+- name: "[step 01] Configure repo"
+  debug:
+    msg: "{{ cdh_repo_url_cm }} // {{ cdh_repo_url_cdh }}"
+
+- name: "[step 02] Install JDK #Install Check ..."
+  shell: 'unset ORACLE_JAVA_INSTALL&&source /etc/profile&&echo $ORACLE_JAVA_INSTALL'
+  register: tag_rlt
+
+- name: "[step 02] Install JDK #Debug ORACLE_JAVA_INSTALL tag ..."
+  debug: var=tag_rlt verbosity=0
+
+- name: "[step 02] Install JDK #JDK do install ..."
+  include_tasks: install_JDK.yml
+  when: not tag_rlt.stdout == "1"
+
+- name: "[step 03] Install Cloudera Manager Server. #Install CDH manager server"
+  include_tasks: install_CDH_manager_server.yml
+  when: cdh_manager
+
+- name: "[step 03] Install Cloudera Manager Agent. #Install CDH agent && start cloudera-scm-agent service"
+  include_tasks: install_CDH_agent.yml
+  when: cdh_agent
+
+- name: "[step 04] Install Databases of preparse directory"
+  file:
+    path: "/usr/share/java"
+    state: "directory"
+  when: cdh_manager
+
+# http://10.0.0.253:8000/files/mysql-connector-java.jar
+- name: "[step 04] Install Databases of preparse jar"
+  get_url:
+    url: "{{ cdh_base_url }}/mysql-connector-java.jar"
+    dest: "/usr/share/java/mysql-connector-java.jar"
+  when: cdh_manager
+
+- name: "[step 04] Install Databases of create database"
+  mysql_db:
+    name: scm
+    state: present
+  when: cdh_manager and hostvars[inventory_hostname]['ansible_default_ipv4']['address'] == db_host
+
+- name: "[step 04] Install Databases"
+  debug:
+   msg: "setting:\n\tdb_type=>{{ db_type }},\n\tdb_host=>{{ db_host }},\n\tdb_port=>{{ db_port }},\n\tdb_user=>{{ db_user }},\n\tdb_pass=>{{ db_pass }}"
+  when: cdh_manager
+
+- name: "[step 05] Set up the Cloudera Manager Database"
+  shell: "/usr/share/cmf/schema/scm_prepare_database.sh {{db_type}} {{db_name}} {{db_user}} {{db_pass}} --host {{db_host}} --port {{db_port}}"
+  when: cdh_manager
+
+# sudo systemctl start cloudera-scm-server
+- name: "[step 06] Install CDH and Other Software of [start cloudera-scm-server]"
+  service:
+    name: cloudera-scm-server
+    state: started
+  register: rlt_scm_server
+  when: cdh_manager
+
+- name: "[step 06] Install CDH and Other Software of [print status of service loudera-scm-server]"
+  debug: var=rlt_scm_server
+  when: cdh_manager
+
+# sudo tail -f /var/log/cloudera-scm-server/cloudera-scm-server.log
+- name: "[step 06] Install CDH and Other Software of [echo log]"
+  debug:
+    msg: "show the log using command: sudo tail -f /var/log/cloudera-scm-server/cloudera-scm-server.log or cat /var/log/cloudera-scm-server/cloudera-scm-server.log"
+  when: cdh_manager
+
+- name: "[step 07] Set Up a Cluster"
+  debug:
+    msg: "login to setup the cluster http://{{server_host}}:7180"
+  when: cdh_manager

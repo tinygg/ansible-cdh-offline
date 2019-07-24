@@ -1,0 +1,61 @@
+---
+
+# delete repo file 
+# (cloudera-cm.repo cloudera-repo.repo)
+
+# sudo wget <repo_file_url> -P /etc/yum.repos.d/
+# cdh_repo_url_cm: "{{ cdh_base_url }}/cm{{cdh_v}}/repo-as-tarball/cm"
+# http://10.0.0.253:8000/files/cm5/repo-as-tarball/cm/cloudera-cm.repo
+#- name: "Download the cloudera-manager.repo file"
+#  get_url:
+#    url: "{{ cdh_repo_url_cm }}/cloudera-cm.repo"
+#    dest: "/etc/yum.repos.d/cloudera-cm.repo"
+
+# baseurl=http://repos.jenkins.cloudera.com/cm5.16.1-rc1/redhat/7/x86_64/cm/5/
+# gpgkey = http://repos.jenkins.cloudera.com/cm5.16.1-rc1/redhat/7/x86_64/cm/RPM-GPG-KEY-cloudera
+#- name: "Modify cloudera-manager.repo file"
+#  lineinfile:
+#    path: "/etc/yum.repos.d/cloudera-cm.repo"
+#    regexp: "^baseurl="
+#    line: "baseurl={{ cdh_repo_url_cm }}/5/"
+
+#- name: "Modify cloudera-manager.repo file"
+#  lineinfile:
+#    path: "/etc/yum.repos.d/cloudera-cm.repo"
+#    regexp: "^gpgkey="
+#    line: "gpgkey={{ cdh_repo_url_cm }}/RPM-GPG-KEY-cloudera"
+
+# sudo rpm --import https://archive.cloudera.com/cm5/redhat/7/x86_64/cm/RPM-GPG-KEY-cloudera
+# http://10.0.0.253:8000/files/cm5/repo-as-tarball/cm/RPM-GPG-KEY-cloudera
+#- name: "Import the repository signing GPG key"
+#  rpm_key:
+#    key: "{{ cdh_repo_url_cm }}/RPM-GPG-KEY-cloudera"
+#    state: present
+
+# /etc/yum.repos.d/cloudera-repo.repo
+# http://10.0.0.253:8000/files/cm5/repo-as-tarball/cm/5
+- name: "Modifying Clients to Use the Internal Repository"
+  template:
+    src: "cloudera-repo.repo.j2"
+    dest: "/etc/yum.repos.d/cloudera-repo.repo"
+
+# sudo yum install cloudera-manager-daemons cloudera-manager-server
+- name: "Install the Cloudera Manager Server packages"
+  yum:
+    name: ["cloudera-manager-daemons", "cloudera-manager-server"]
+    state: present
+
+- name: "Configure the Cloudera Manager Server's [JAVA_HOME] the installed place of get JAVA_HOME"
+  shell: "unset JAVA_HOME&&source /etc/profile&&echo $JAVA_HOME"
+  register: rlt_JAVA_HOME
+
+- name: "Configure the Cloudera Manager Server's [JAVA_HOME] the installed place of debug JAVA_HOME"
+  debug: var=rlt_JAVA_HOME
+
+# /etc/default/cloudera-scm-server
+- name: "Configure the Cloudera Manager Server's [JAVA_HOME] the installed place"
+  lineinfile:
+    path: "/etc/default/cloudera-scm-server"
+    regexp: '^export JAVA_HOME='
+    line: 'export JAVA_HOME="{{rlt_JAVA_HOME.stdout}}"'
+
