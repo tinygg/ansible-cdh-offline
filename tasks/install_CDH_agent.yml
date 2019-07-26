@@ -5,6 +5,22 @@
     src: "cloudera-repo.repo.j2"
     dest: "/etc/yum.repos.d/cloudera-repo.repo"
 
+- name: "Uninstall the Cloudera Manager Agent packages of [remove service： cloudera-manager-agent]"
+  yum:
+    name: ["cloudera-manager-agent"]
+    state: removed
+  when: drop_old_agent
+
+# /var/lib/cloudera-scm-agent/cm_guid
+- name: "clear cm_guid"
+  file:
+    path: "/var/lib/cloudera-scm-agent/cm_guid"
+    state: absent
+
+- name: "Uninstall the Cloudera Manager Agent packages of [reset-failed and daemon-reload]"
+  shell: "systemctl reset-failed&&systemctl daemon-reload"
+  when: drop_old_agent
+
 # sudo yum install cloudera-manager-daemons cloudera-manager-agent
 - name: "Install the Cloudera Manager agent"
   yum:
@@ -38,8 +54,29 @@
     regexp: "^use_tls="
     line: "use_tls={{ agent_use_tls }}"
 
+# View swappiness
+# /proc/sys/vm/swappiness
+# Cloudera 建议将 /proc/sys/vm/swappiness 设置为最大值 10。当前设置为 60。
+#
+# Change temporary
+# 使用 sysctl 命令在运行时更改该设置并编辑 /etc/sysctl.conf
+# sysctl vm.swappiness=10
+#
+# Change Permanently
+# /etc/sysctl.conf
+# vm.swappiness=10
+- name: "Change swappiness, temporary"
+  shell: "sysctl vm.swappiness=10"
+
+- name: "Change swappiness, permanently"
+  lineinfile:
+    path: "/etc/sysctl.conf"
+    regexp: "^vm.swappiness="
+    line: "vm.swappiness=10"
+
+# DO NOT START AGENT, ORELSE WE CAN'T CONFIGURE THE INSTALLATION DATA PACKAGE.
 # sudo systemctl start cloudera-scm-agent
 - name: "Start the Agents"
   service:
     name: cloudera-scm-agent
-    state: started
+    state: stopped

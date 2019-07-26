@@ -18,6 +18,10 @@ vars:
   server_host: localhost
   server_port: 7182
 
+  drop_old_cdh: no #[Be care full], if set to [yes] it'll drop the cdh database [scm], old cluster will lost!
+  cluster_hosts: "192.168.1.[11-14]"
+  drop_old_agent: no #[Be care full], if set to [yes] it'll drop the all the agent, old cluster nodes will lost!
+
   db_type: mysql
   db_name: scm
   db_host: localhost

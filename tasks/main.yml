@@ -37,6 +37,12 @@
     dest: "/usr/share/java/mysql-connector-java.jar"
   when: cdh_manager
 
+- name: "[step 04] Install Databases of drop database"
+  mysql_db:
+    name: scm
+    state: absent
+  when: cdh_manager and hostvars[inventory_hostname]['ansible_default_ipv4']['address'] == db_host and drop_old_cdh
+
 - name: "[step 04] Install Databases of create database"
   mysql_db:
     name: scm
@@ -72,5 +78,18 @@
 
 - name: "[step 07] Set Up a Cluster"
   debug:
-    msg: "login to setup the cluster http://{{server_host}}:7180"
+    msg:
+    - "Login and setup the cluster http://{{server_host}}:7180 with username/password = (admin/admin) by default."
+    - "1. Setup #1) Terms and Conditions of End User => Check |Agree|, then Next"
+    - "2. Setup #2) Which Version to deploy? => Click |Cloudera Express|, then Next"
+    - "3. Setup #3) List of all the packages and licenses => Click Next"
+    - "4. Setup #4) Find hosts for the cluster => Input all your cluster_hosts: {{ cluster_hosts }}, then Click |Search|, after a while it'll show your wanted hosts, then Check on the list, then Click Next"
+    - "5. Setup #5.1) Choose storage => Check |Use data package|, then Choose |CDH Version: CDH {{ cdh_v }}|"
+    - "   Setup #5.2)                   Choose |the Specialized CDH Version: User Defined Storage|, then input url: {{cdh_repo_url_cdh}}/{{ cdh_version }}/"
+    - "   Setup #5.2)                   the Specialized Cloudera Manager Agent Version, Choose |User Defined Storage|, then input url: {{cdh_repo_url_cm}}/{{ cdh_version }}/"
+    - "   Setup #5.3)                   User Defined Main URL|, input url: {{cdh_repo_url_cdh}}/RPM-GPG-KEY-cloudera , then Next"
+    - "6. Setup #6) JDK install option: DO NOT CHECK ANY CHECKBOX!!! then Next"
+    - "7. Setup #7) Standalone Mode: DO NOT CHECK ANY CHECKBOX!!! then Next"
+    - "8. Setup #8) SSH Token: input password(recommend, but all the hosts must be the same password) or upload your key is both ok, then Next"
+    - "9. Setup #9) Install Agents, simple. If you failled, you can check logs, is flexible."
   when: cdh_manager

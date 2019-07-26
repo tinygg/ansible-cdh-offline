@@ -17,17 +17,21 @@
     java_download_path: /tmp
     java_download_from_oracle: true
     java_remove_download: true
-    jdk_tarball_url: "http://10.0.0.189:9999/files/jdk-8u211-linux-x64.tar.gz"
+    jdk_tarball_url: "http://10.0.0.253:9999/files/jdk-8u211-linux-x64.tar.gz"
     java_set_javahome: true
     java_install_jce: false
-    java_install_dir: "/usr/lib/jvm/java-1.8"
-    java_default_link_name: default
+    java_install_dir: "/usr/lib/jvm"
+    java_default_link_name: "java-8-oracle"
+
+# CDH能识别的路径
+# /usr/lib/jvm/default-java
+# /usr/lib/jvm/java-8-oracle
 
 - name: Env add /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^export JAVA_HOME="
-    line: "export JAVA_HOME=/usr/lib/jvm/java-1.8/default"
+    line: "export JAVA_HOME={{java_install_dir}}/{{java_default_link_name}}"
 
 - name: Env add /etc/profile
   lineinfile: 
@@ -35,11 +39,76 @@
     regexp: "^export CLASSPATH="
     line: "export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar"
 
+# 删除多行
+############################################
+- name : Env absent /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^PATH="
+    state: absent
+
+- name : Env absent /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^PATH="
+    state: absent
+
+- name : Env absent /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^PATH="
+    state: absent
+
+- name : Env absent /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^PATH="
+    state: absent
+############################################
+
 - name : Env add /etc/profile
   lineinfile: 
     dest: /etc/profile
-    regexp: "^export PATH="
-    line: "export PATH=$JAVA_HOME/bin:$PATH"
+    regexp: "^PATH=$JAVA_HOME"
+    line: "PATH=$JAVA_HOME/bin:$PATH"
+
+# 删除多行
+############################################
+- name : Env absent /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^export PATH"
+    state: absent
+
+- name : Env absent /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^export PATH"
+    state: absent
+
+- name : Env absent /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^export PATH"
+    state: absent
+
+- name : Env absent /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^export PATH"
+    state: absent
+############################################
+- name : Env add /etc/profile
+  lineinfile: 
+    dest: /etc/profile
+    regexp: "^export PATH"
+    line: "export PATH"
+
+- name: "clean old JAVA_HOME"
+  lineinfile:
+    dest: /etc/profile
+    regexp: "export PATH=$JAVA_HOME/bin:$PATH"
+    state: absent
 
 - name : Env add /etc/profile
   lineinfile: 
@@ -47,11 +116,17 @@
     regexp: "^export LC_ALL="
     line: "export LC_ALL='zh_CN.utf8'"
 
+#- name : Env add /etc/profile
+#  lineinfile: 
+#    dest: /etc/profile
+#    regexp: "^ulimit"
+#    line: "ulimit -n 99999999"
+
 - name : Env add /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^ulimit"
-    line: "ulimit -n 99999999"
+    state: absent
 
 - name: Env add /etc/profile Java_TAG
   lineinfile:

@@ -15,7 +15,7 @@
 # gpgkey = http://repos.jenkins.cloudera.com/cm5.16.1-rc1/redhat/7/x86_64/cm/RPM-GPG-KEY-cloudera
 #- name: "Modify cloudera-manager.repo file"
 #  lineinfile:
-#    path: "/etc/yum.repos.d/cloudera-cm.repo"
+#    path: "/etc/yum.repos.d/cloudera-manager.repo"
 #    regexp: "^baseurl="
 #    line: "baseurl={{ cdh_repo_url_cm }}/5/"
 
@@ -32,12 +32,47 @@
 #    key: "{{ cdh_repo_url_cm }}/RPM-GPG-KEY-cloudera"
 #    state: present
 
+# remove cloudera-manager.repo
+- name: "remove cloudera-manager.repo"
+  file:
+    path: "/etc/yum.repos.d/cloudera-manager.repo"
+    state: absent
+  when: drop_old_cdh
+
+# yum --downloadonly --downloaddir=/root/packages install xxx
+- name: "install yum utils"
+  yum:
+    name: "yum-utils"
+    state: present
+  when: drop_old_cdh
+
+- name: "cleanup old installation"
+  shell: "yum-complete-transaction --cleanup-only"
+  when: drop_old_cdh
+
 # /etc/yum.repos.d/cloudera-repo.repo
 # http://10.0.0.253:8000/files/cm5/repo-as-tarball/cm/5
 - name: "Modifying Clients to Use the Internal Repository"
   template:
     src: "cloudera-repo.repo.j2"
     dest: "/etc/yum.repos.d/cloudera-repo.repo"
+
+
+- name: "Uninstall the Cloudera Manager Server packages of [remove service： cloudera-manager-daemons]"
+  yum:
+    name: ["cloudera-manager-daemons","cloudera-manager-server"]
+    state: removed
+  when: drop_old_cdh
+
+- name: "Uninstall the Cloudera Manager Server packages of [reset-failed service]"
+  shell: "systemctl reset-failed&&systemctl daemon-reload"
+  when: drop_old_cdh
+
+- name: "Uninstall the Cloudera Manager Server packages of [remove log files]"
+  file:
+    path: "/var/log/cloudera-scm-server/"
+    state: absent
+  when: drop_old_cdh
 
 # sudo yum install cloudera-manager-daemons cloudera-manager-server
 - name: "Install the Cloudera Manager Server packages"
