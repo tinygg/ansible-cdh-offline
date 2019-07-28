@@ -31,7 +31,7 @@
   lineinfile:
     dest: /etc/profile
     regexp: "^export JAVA_HOME="
-    line: "export JAVA_HOME={{java_install_dir}}/{{java_default_link_name}}"
+    line: "export JAVA_HOME={{ java_install_dir }}/{{ java_default_link_name }}"
 
 - name: Env add /etc/profile
   lineinfile:
@@ -142,5 +142,5 @@
   debug: var=tag_rlt verbosity=0
 
 - name: Usage about tag_rlt comment
-  debug: 
+  debug:
     msg: "You should not use (tag_rlt == '1') but using (tag_rlt.stdout == '1')."

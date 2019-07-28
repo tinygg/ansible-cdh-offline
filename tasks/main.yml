@@ -6,7 +6,7 @@
     msg:
     - "cdh_repo_url_cm={{ cdh_repo_url_cm }}"
     - "cdh_repo_url_cdh={{ cdh_repo_url_cdh }}"
-    - "install_type_PARCEL: {{install_type_PARCEL}}"
+    - "install_type_PARCEL={{ install_type_PARCEL }}"
     - "cdh_parcel_url_cdh={{ cdh_parcel_url_cdh }}"
     - "cdh_parcel_url_cm={{ cdh_parcel_url_cm }}"
     - "parcel_file={{ parcel_file }}"
@@ -66,7 +66,7 @@
 
 - name: "[0].download cm_gz_file"
   get_url:
-    url: "{{cdh_parcel_url_cm}}/{{ cm_gz_file }}"
+    url: "{{ cdh_parcel_url_cm }}/{{ cm_gz_file }}"
     dest: "{{ parcel_install_dir }}/{{ cm_gz_file }}"
     owner: cloudera-scm
     group: cloudera-scm
@@ -96,7 +96,7 @@
 
 - name: "makesure owner:group"
   file:
-    path: "{{item}}"
+    path: "{{ item }}"
     state: directory
     owner: cloudera-scm
     group: cloudera-scm
@@ -154,11 +154,16 @@
   when: cdh_manager
 
 - name: "[step 05] Set up the Cloudera Manager Database"
-  shell: "/usr/share/cmf/schema/scm_prepare_database.sh {{db_type}} {{db_name}} {{db_user}} {{db_pass}} --host {{db_host}} --port {{db_port}}"
+  shell: >
+    "/usr/share/cmf/schema/scm_prepare_database.sh {{ db_type }} {{ db_name }} {{ db_user }} {{ db_pass }}
+    --host {{ db_host }} --port {{ db_port }}"
   when: cdh_manager and not install_type_PARCEL
 
 - name: "[step 05] Set up the Cloudera Manager Database"
-  shell: "{{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/share/cmf/schema/scm_prepare_database.sh {{db_type}} {{db_name}} {{db_user}} {{db_pass}} --host {{db_host}} --port {{db_port}}"
+  shell: >
+    "{{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/share/cmf/schema/scm_prepare_database.sh
+    {{db_type}} {{ db_name }} {{ db_user }} {{ db_pass }} 
+    --host {{ db_host }} --port {{ db_port }}"
   when: cdh_manager and install_type_PARCEL
 
 # start service
@@ -182,7 +187,11 @@
 # sudo tail -f /var/log/cloudera-scm-server/cloudera-scm-server.log
 - name: "[step 06] Install CDH and Other Software of [echo log]"
   debug:
-    msg: "show the log using command: sudo tail -f /var/log/cloudera-scm-server/cloudera-scm-server.log or cat /var/log/cloudera-scm-server/cloudera-scm-server.log"
+    msg: >
+      "show the log using command:
+      sudo tail -f /var/log/cloudera-scm-server/cloudera-scm-server.log
+      or
+      cat /var/log/cloudera-scm-server/cloudera-scm-server.log"
   when: cdh_manager
 
 - name: "[step 07] Set Up a Cluster"
