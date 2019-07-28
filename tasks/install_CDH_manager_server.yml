@@ -26,7 +26,7 @@
 
 - name: "Uninstall the Cloudera Manager Server packages of [remove service： cloudera-manager-daemons]"
   yum:
-    name: ["cloudera-manager-daemons","cloudera-manager-server"]
+    name: ["cloudera-manager-daemons", "cloudera-manager-server"]
     state: removed
   when: drop_old_cdh
 
@@ -59,4 +59,3 @@
     path: "/etc/default/cloudera-scm-server"
     regexp: '^export JAVA_HOME='
     line: 'export JAVA_HOME="{{rlt_JAVA_HOME.stdout}}"'
-

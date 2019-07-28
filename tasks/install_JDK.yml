@@ -41,32 +41,32 @@
 
 # 删除多行
 ############################################
-- name : Env absent /etc/profile
+- name: Env absent /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^PATH="
     state: absent
 
-- name : Env absent /etc/profile
+- name: Env absent /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^PATH="
     state: absent
 
-- name : Env absent /etc/profile
+- name: Env absent /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^PATH="
     state: absent
 
-- name : Env absent /etc/profile
+- name: Env absent /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^PATH="
     state: absent
 ############################################
 
-- name : Env add /etc/profile
+- name: Env add /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^PATH=$JAVA_HOME"
@@ -74,31 +74,31 @@
 
 # 删除多行
 ############################################
-- name : Env absent /etc/profile
+- name: Env absent /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^export PATH"
     state: absent
 
-- name : Env absent /etc/profile
+- name: Env absent /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^export PATH"
     state: absent
 
-- name : Env absent /etc/profile
+- name: Env absent /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^export PATH"
     state: absent
 
-- name : Env absent /etc/profile
+- name: Env absent /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^export PATH"
     state: absent
 ############################################
-- name : Env add /etc/profile
+- name: Env add /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^export PATH"
@@ -110,7 +110,7 @@
     regexp: "export PATH=$JAVA_HOME/bin:$PATH"
     state: absent
 
-- name : Env add /etc/profile
+- name: Env add /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^export LC_ALL="
@@ -122,7 +122,7 @@
 #    regexp: "^ulimit"
 #    line: "ulimit -n 99999999"
 
-- name : Env add /etc/profile
+- name: Env add /etc/profile
   lineinfile: 
     dest: /etc/profile
     regexp: "^ulimit"
