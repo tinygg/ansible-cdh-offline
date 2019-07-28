@@ -58,4 +58,4 @@
   lineinfile:
     path: "/etc/default/cloudera-scm-server"
     regexp: '^export JAVA_HOME='
-    line: 'export JAVA_HOME="{{rlt_JAVA_HOME.stdout}}"'
+    line: 'export JAVA_HOME="{{ rlt_JAVA_HOME.stdout }}"'

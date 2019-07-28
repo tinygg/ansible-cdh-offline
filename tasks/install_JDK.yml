@@ -28,13 +28,13 @@
 # /usr/lib/jvm/java-8-oracle
 
 - name: Env add /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^export JAVA_HOME="
     line: "export JAVA_HOME={{java_install_dir}}/{{java_default_link_name}}"
 
 - name: Env add /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^export CLASSPATH="
     line: "export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar"
@@ -42,32 +42,32 @@
 # 删除多行
 ############################################
 - name: Env absent /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^PATH="
     state: absent
 
 - name: Env absent /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^PATH="
     state: absent
 
 - name: Env absent /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^PATH="
     state: absent
 
 - name: Env absent /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^PATH="
     state: absent
 ############################################
 
 - name: Env add /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^PATH=$JAVA_HOME"
     line: "PATH=$JAVA_HOME/bin:$PATH"
@@ -75,31 +75,31 @@
 # 删除多行
 ############################################
 - name: Env absent /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^export PATH"
     state: absent
 
 - name: Env absent /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^export PATH"
     state: absent
 
 - name: Env absent /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^export PATH"
     state: absent
 
 - name: Env absent /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^export PATH"
     state: absent
 ############################################
 - name: Env add /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^export PATH"
     line: "export PATH"
@@ -111,19 +111,19 @@
     state: absent
 
 - name: Env add /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^export LC_ALL="
     line: "export LC_ALL='zh_CN.utf8'"
 
 #- name : Env add /etc/profile
-#  lineinfile: 
+#  lineinfile:
 #    dest: /etc/profile
 #    regexp: "^ulimit"
 #    line: "ulimit -n 99999999"
 
 - name: Env add /etc/profile
-  lineinfile: 
+  lineinfile:
     dest: /etc/profile
     regexp: "^ulimit"
     state: absent

@@ -5,7 +5,7 @@
 ###################################################
 - name: "Install the Cloudera Manager Server packages/[parcels], check cm_gz_file/【parcel_file】/sha_file/json_file"
   stat:
-    path: "{{parcel_install_dir}}/cloudera/parcel-repo/{{parcel_file}}"
+    path: "{{ parcel_install_dir }}/cloudera/parcel-repo/{{ parcel_file }}"
   register: rlt_parcel
   when: install_type_PARCEL
 
@@ -15,8 +15,8 @@
 
 - name: "[2].download parcel_file"
   get_url:
-    url: "{{cdh_parcel_url_cdh}}/{{parcel_file}}"
-    dest: "{{parcel_install_dir}}/cloudera/parcel-repo/{{parcel_file}}"
+    url: "{{cdh_parcel_url_cdh}}/{{ parcel_file }}"
+    dest: "{{ parcel_install_dir }}/cloudera/parcel-repo/{{ parcel_file }}"
     group: cloudera-scm
     owner: cloudera-scm
   retries: 4
@@ -27,7 +27,7 @@
 ###################################################
 - name: "Install the Cloudera Manager Server packages/[parcels], check cm_gz_file/parcel_file/【sha_file】/json_file"
   stat:
-    path: "{{parcel_install_dir}}/cloudera/parcel-repo/{{sha_file}}"
+    path: "{{ parcel_install_dir }}/cloudera/parcel-repo/{{ sha_file }}"
   register: rlt_sha
   when: install_type_PARCEL
 
@@ -37,8 +37,8 @@
 
 - name: "[2].download sha_file"
   get_url:
-    url: "{{cdh_parcel_url_cdh}}/{{sha_file}}"
-    dest: "{{parcel_install_dir}}/cloudera/parcel-repo/{{sha_file}}"
+    url: "{{cdh_parcel_url_cdh}}/{{ sha_file }}"
+    dest: "{{ parcel_install_dir }}/cloudera/parcel-repo/{{ sha_file }}"
     group: cloudera-scm
     owner: cloudera-scm
   retries: 4
@@ -49,7 +49,7 @@
 ###################################################
 - name: "Install the Cloudera Manager Server packages/[parcels], check cm_gz_file/parcel_file/sha_file/【json_file】"
   stat:
-    path: "{{parcel_install_dir}}/cloudera/parcel-repo/{{json_file}}"
+    path: "{{ parcel_install_dir }}/cloudera/parcel-repo/{{ json_file }}"
   register: rlt_json
   when: install_type_PARCEL
 
@@ -59,8 +59,8 @@
 
 - name: "[2].download json file"
   get_url:
-    url: "{{cdh_parcel_url_cdh}}/{{json_file}}"
-    dest: "{{parcel_install_dir}}/cloudera/parcel-repo/{{json_file}}"
+    url: "{{cdh_parcel_url_cdh}}/{{ json_file }}"
+    dest: "{{ parcel_install_dir }}/cloudera/parcel-repo/{{ json_file }}"
     group: cloudera-scm
     owner: cloudera-scm
   retries: 4
@@ -83,7 +83,7 @@
 #chown cloudera-scm:cloudera-scm /etc/rc.d/init.d/cloudera-scm-server
 - name: "Add System Service"
   copy:
-    src: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/init.d/cloudera-scm-server"
+    src: "{{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/etc/init.d/cloudera-scm-server"
     dest: "/etc/rc.d/init.d/cloudera-scm-server"
     mode: 0755
     remote_src: yes
@@ -95,13 +95,13 @@
   lineinfile:
     path: "/etc/rc.d/init.d/cloudera-scm-server"
     regexp: "^CMF_DEFAULTS=\\$\\{CMF_DEFAULTS"
-    line: "CMF_DEFAULTS={{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/default"
+    line: "CMF_DEFAULTS={{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/etc/default"
 
 - name: "Add service [cloudera-scm-server] of CMF_DEFAULTS to service file"
   lineinfile:
     path: "/etc/rc.d/init.d/cloudera-scm-server"
-    regexp: "^CMF_DEFAULTS={{parcel_install_dir}}"
-    line: "CMF_DEFAULTS={{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/default"
+    regexp: "^CMF_DEFAULTS={{ parcel_install_dir }}"
+    line: "CMF_DEFAULTS={{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/etc/default"
 
 # 添加系统启动服务
 #chkconfig --add cloudera-scm-server

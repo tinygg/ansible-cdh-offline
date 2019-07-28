@@ -21,7 +21,7 @@
 #server_port=7182
 - name: "Configure the Cloudera Manager Agent to [point to] the [Cloudera Manager Server] of [server_host]"
   lineinfile:
-    path: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/cloudera-scm-agent/config.ini"
+    path: "{{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/etc/cloudera-scm-agent/config.ini"
     regexp: "^server_host="
     line: "server_host={{ server_host }}"
 
@@ -35,7 +35,7 @@
 # use_tls=1
 - name: "Configure the Cloudera Manager Agent of [use_tls]"
   lineinfile:
-    path: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/cloudera-scm-agent/config.ini"
+    path: "{{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/etc/cloudera-scm-agent/config.ini"
     regexp: "^use_tls="
     line: "use_tls={{ agent_use_tls }}"
 
@@ -72,7 +72,7 @@
 #chown cloudera-scm:cloudera-scm /etc/rc.d/init.d/cloudera-scm-agent
 - name: "Add System Service"
   copy:
-    src: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/init.d/cloudera-scm-agent"
+    src: "{{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/etc/init.d/cloudera-scm-agent"
     dest: "/etc/rc.d/init.d/cloudera-scm-agent"
     mode: 0755
     remote_src: yes
@@ -84,13 +84,13 @@
   lineinfile:
     path: "/etc/rc.d/init.d/cloudera-scm-agent"
     regexp: "^CMF_DEFAULTS=\\$\\{CMF_DEFAULTS"
-    line: "CMF_DEFAULTS={{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/default"
+    line: "CMF_DEFAULTS={{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/etc/default"
 
 - name: "Add service [cloudera-scm-agent] of CMF_DEFAULTS to service file"
   lineinfile:
     path: "/etc/rc.d/init.d/cloudera-scm-agent"
-    regexp: "^CMF_DEFAULTS={{parcel_install_dir}}"
-    line: "CMF_DEFAULTS={{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/default"
+    regexp: "^CMF_DEFAULTS={{ parcel_install_dir }}"
+    line: "CMF_DEFAULTS={{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/etc/default"
 # 添加系统启动服务
 #chkconfig --add cloudera-scm-agent
 #chkconfig --level 35 cloudera-scm-agent on
