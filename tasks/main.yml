@@ -1,9 +1,19 @@
 ---
 # tasks file for ansible-cdh-offline
 
-- name: "[step 01] Configure repo"
+- name: "[step 01] Configuration"
   debug:
-    msg: "{{ cdh_repo_url_cm }} // {{ cdh_repo_url_cdh }}"
+    msg:
+    - "cdh_repo_url_cm={{ cdh_repo_url_cm }}"
+    - "cdh_repo_url_cdh={{ cdh_repo_url_cdh }}"
+    - "install_type_PARCEL: {{install_type_PARCEL}}"
+    - "cdh_parcel_url_cdh={{ cdh_parcel_url_cdh }}"
+    - "cdh_parcel_url_cm={{ cdh_parcel_url_cm }}"
+    - "parcel_file={{parcel_file}}"
+    - "sha_file={{sha_file}}"
+    - "json_file={{json_file}}"
+    - "cm_gz_file={{cm_gz_file}}"
+    - "parcel_install_dir={{parcel_install_dir}}"
 
 - name: "[step 02] Install JDK #Install Check ..."
   shell: 'unset ORACLE_JAVA_INSTALL&&source /etc/profile&&echo $ORACLE_JAVA_INSTALL'
@@ -16,13 +26,102 @@
   include_tasks: install_JDK.yml
   when: not tag_rlt.stdout == "1"
 
+###################################################
+# prepare dir
+###################################################
+- name: "Install dir preparing"
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: cloudera-scm
+    group: cloudera-scm
+  with_items:
+  - "{{parcel_install_dir}}/cloudera-manager"
+  - "{{parcel_install_dir}}/cloudera"
+  - "{{parcel_install_dir}}/cloudera/csd"
+  - "{{parcel_install_dir}}/cloudera/parcels"
+  - "{{parcel_install_dir}}/cloudera/parcel-repo"
+  when: install_type_PARCEL
+
+#useradd --system --home=/opt/cloudera-manager/cm-5.16.1/run/cloudera-scm-server/ --no-create-home --shell=/bin/false --comment "Cloudera SCM User" cloudera-scm
+- name: "Create cloudera-scm account"
+  user:
+    name: cloudera-scm
+    groups: cloudera-scm
+    comment: "Cloudera SCM User"
+    shell: "/bin/false"
+    home: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/run/cloudera-scm-server/"
+###################################################
+# cm_gz_file
+###################################################
+- name: "[0].cm_gz_file check"
+  stat:
+    path: "{{parcel_install_dir}}/{{cm_gz_file}}"
+  register: rlt_cm_gz
+  when: install_type_PARCEL
+
+- name: "[0].cm_gz_file debug"
+  debug: var=rlt_cm_gz
+  when: install_type_PARCEL
+
+- name: "[0].download cm_gz_file"
+  get_url:
+    url: "{{cdh_parcel_url_cm}}/{{cm_gz_file}}"
+    dest: "{{parcel_install_dir}}/{{cm_gz_file}}"
+    owner: cloudera-scm
+    group: cloudera-scm
+    mode: 0666
+  retries: 4
+  delay: 10
+  when: install_type_PARCEL and not rlt_cm_gz.stat.exists
+
+- name: "[0].cm_gz_file check unzip stat /opt/cloudera-manager/cm-5.16.1/sbin/cmf-server"
+  stat:
+    path: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/sbin/cmf-server"
+  register: rlt_cm_sbin
+  when: install_type_PARCEL
+
+- name: "[0].rlt_cm_sbin debug"
+  debug: var=rlt_cm_sbin
+  when: install_type_PARCEL
+
+- name: "[0].unzip cm_gz_file"
+  unarchive:
+    src: "{{parcel_install_dir}}/{{cm_gz_file}}"
+    dest: "{{parcel_install_dir}}/cloudera-manager"
+    owner: cloudera-scm
+    group: cloudera-scm
+    remote_src: yes
+  when: install_type_PARCEL and not rlt_cm_sbin.stat.exists
+
+- name: "makesure owner:group"
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: cloudera-scm
+    group: cloudera-scm
+    recurse: yes
+  with_items:
+  - "{{parcel_install_dir}}/cloudera-manager"
+  - "{{parcel_install_dir}}/cloudera"
+  when: install_type_PARCEL
+###################################################
+
 - name: "[step 03] Install Cloudera Manager Server. #Install CDH manager server"
   include_tasks: install_CDH_manager_server.yml
-  when: cdh_manager
+  when: cdh_manager and not install_type_PARCEL
+
+- name: "[step 03] Install Cloudera Manager Server. #Install CDH manager server"
+  include_tasks: install_CDH_parcel_cm_server.yml
+  when: cdh_manager and install_type_PARCEL
 
 - name: "[step 03] Install Cloudera Manager Agent. #Install CDH agent && start cloudera-scm-agent service"
   include_tasks: install_CDH_agent.yml
-  when: cdh_agent
+  when: cdh_agent and not install_type_PARCEL
+
+- name: "[step 03] Install Cloudera Manager Agent. #Install CDH agent && start cloudera-scm-agent service"
+  include_tasks: install_CDH_parcel_cm_agent.yml
+  when: cdh_agent and install_type_PARCEL
 
 - name: "[step 04] Install Databases of preparse directory"
   file:
@@ -56,15 +155,25 @@
 
 - name: "[step 05] Set up the Cloudera Manager Database"
   shell: "/usr/share/cmf/schema/scm_prepare_database.sh {{db_type}} {{db_name}} {{db_user}} {{db_pass}} --host {{db_host}} --port {{db_port}}"
-  when: cdh_manager
+  when: cdh_manager and not install_type_PARCEL
 
-# sudo systemctl start cloudera-scm-server
+- name: "[step 05] Set up the Cloudera Manager Database"
+  shell: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/share/cmf/schema/scm_prepare_database.sh {{db_type}} {{db_name}} {{db_user}} {{db_pass}} --host {{db_host}} --port {{db_port}}"
+  when: cdh_manager and install_type_PARCEL
+
+# start service
+# sudo systemctl start cloudera-scm-server (以服务的方式启动)
 - name: "[step 06] Install CDH and Other Software of [start cloudera-scm-server]"
   service:
     name: cloudera-scm-server
-    state: started
+    state: restarted
   register: rlt_scm_server
-  when: cdh_manager
+  when: cdh_manager and not install_type_PARCEL
+
+- name: "[step 06] Install CDH and Other Software of [start cloudera-scm-server]"
+  shell: "service cloudera-scm-server restart&&service cloudera-scm-server status -l"
+  register: rlt_scm_server
+  when: cdh_manager and install_type_PARCEL
 
 - name: "[step 06] Install CDH and Other Software of [print status of service loudera-scm-server]"
   debug: var=rlt_scm_server
@@ -92,4 +201,4 @@
     - "7. Setup #7) Standalone Mode: DO NOT CHECK ANY CHECKBOX!!! then Next"
     - "8. Setup #8) SSH Token: input password(recommend, but all the hosts must be the same password) or upload your key is both ok, then Next"
     - "9. Setup #9) Install Agents, simple. If you failled, you can check logs, is flexible."
-  when: cdh_manager
+  when: cdh_manager and not install_type_PARCEL

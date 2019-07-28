@@ -4,14 +4,35 @@ vars:
   cdh_v: 5
   cdh_version: 5.16.1
   cdh_base_url: "https://archive.cloudera.com"
+
+
+  install_type_PARCEL: yes
+
+  # centos5/6/7 support
+  cdh_install_os_num: 7
+  cdh_install_os: centos7
+
+
   cdh_repo_url_cm: "{{ cdh_base_url }}/cm{{cdh_v}}/repo-as-tarball/{{ cdh_version }}"
   cdh_repo_url_cdh: "{{ cdh_base_url }}/cdh{{cdh_v}}/repo-as-tarball/{{ cdh_version }}"
-  # centos5/6/7 support
-  cdh_install_os: centos7
+
   cdh_repo_file_gz: "cm{{ cdh_version }}-{{ cdh_install_os}}.tar.gz"
   cdh_repo_file_md5: "{{ cdh_repo_file_gz}}.md5"
   cdh_repo_file_sha1: "{{ cdh_repo_file_gz}}.sha1"
-  
+
+# files\parcels\cdh5\5.16.1
+# files\parcels\cm5\5.16.1
+  cdh_parcel_url_cdh: "{{ cdh_base_url }}/parcels/cdh{{cdh_v}}/{{ cdh_version }}"
+  cdh_parcel_url_cm: "{{ cdh_base_url }}/parcels/cm{{cdh_v}}/{{ cdh_version }}"
+
+  parcel_p_num: 3
+  parcel_name: "CDH-{{ cdh_version }}-1.cdh{{ cdh_version }}.p0.{{parcel_p_num}}-el{{cdh_install_os_num}}"
+  parcel_file: "{{parcel_name}}.parcel"
+  sha_file: "{{parcel_name}}.parcel.sha"
+  json_file: "manifest.json"
+  cm_gz_file: "cloudera-manager-centos{{cdh_install_os_num}}-cm{{cdh_version}}_x86_64.tar.gz"
+  parcel_install_dir: "/opt"
+
   cdh_manager: no
   cdh_agent: no
   cdh_datanode: no

@@ -1,0 +1,128 @@
+---
+
+- name: "Uninstall the Cloudera Manager Agent packages of [remove service： cloudera-manager-agent]"
+  yum:
+    name: ["cloudera-manager-agent"]
+    state: removed
+  when: drop_old_agent
+
+# /var/lib/cloudera-scm-agent/cm_guid
+- name: "clear cm_guid"
+  file:
+    path: "/var/lib/cloudera-scm-agent/cm_guid"
+    state: absent
+
+# configure the Cloudera Manager Agent to point to the Cloudera Manager Server
+# /opt/cloudera-manager/cm-5.16.1/etc/cloudera-scm-agent/config.ini
+#[General]
+# Hostname of the CM server.
+#server_host=localhost
+# Port that the CM server is listening on.
+#server_port=7182
+- name: "Configure the Cloudera Manager Agent to [point to] the [Cloudera Manager Server] of [server_host]"
+  lineinfile:
+    path: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/cloudera-scm-agent/config.ini"
+    regexp: "^server_host="
+    line: "server_host={{ server_host }}"
+
+#- name: "Configure the Cloudera Manager Agent to [point to] the [Cloudera Manager Server] of [server_port]"
+#  lineinfile:
+# /opt/cloudera-manager/cm-5.16.1/etc/cloudera-scm-agent/config.ini
+#    regexp: "^server_port="
+#    line: "server_port={{ server_port }}"
+
+# /etc/cloudera-scm-agent/config.ini
+# use_tls=1
+- name: "Configure the Cloudera Manager Agent of [use_tls]"
+  lineinfile:
+    path: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/cloudera-scm-agent/config.ini"
+    regexp: "^use_tls="
+    line: "use_tls={{ agent_use_tls }}"
+
+# View swappiness
+# /proc/sys/vm/swappiness
+# Cloudera 建议将 /proc/sys/vm/swappiness 设置为最大值 10。当前设置为 60。
+#
+# Change temporary
+# 使用 sysctl 命令在运行时更改该设置并编辑 /etc/sysctl.conf
+# sysctl vm.swappiness=10
+#
+# Change Permanently
+# /etc/sysctl.conf
+# vm.swappiness=10
+- name: "Change swappiness, temporary"
+  shell: "sysctl vm.swappiness=10"
+
+- name: "Change swappiness, permanently"
+  lineinfile:
+    path: "/etc/sysctl.conf"
+    regexp: "^vm.swappiness="
+    line: "vm.swappiness=10"
+
+###################################################
+# add service [cloudera-scm-agent]
+###################################################
+- name: "delete service file"
+  file:
+    path: "/etc/rc.d/init.d/cloudera-scm-agent"
+    state: absent
+
+# 设置使用"cloudera-scm-agent"为系统启动服务
+#cp /opt/cloudera-manager/cm-5.16.1/etc/init.d/cloudera-scm-agent /etc/rc.d/init.d/cloudera-scm-agent
+#chown cloudera-scm:cloudera-scm /etc/rc.d/init.d/cloudera-scm-agent
+- name: "Add System Service"
+  copy:
+    src: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/init.d/cloudera-scm-agent"
+    dest: "/etc/rc.d/init.d/cloudera-scm-agent"
+    mode: 0755
+    remote_src: yes
+
+# 修改"CMF_DEFAULTS=${CMF_DEFAULTS:-/etc/default}"的路径,在此之前添加环境变量CMF_DEFAULTS
+#vim /etc/rc.d/init.d/cloudera-scm-agent
+#CMF_DEFAULTS=/opt/cloudera-manager/cm-5.16.1/etc/default
+- name: "Add service [cloudera-scm-agent] of CMF_DEFAULTS to service file"
+  lineinfile:
+    path: "/etc/rc.d/init.d/cloudera-scm-agent"
+    regexp: "^CMF_DEFAULTS=\\$\\{CMF_DEFAULTS"
+    line: "CMF_DEFAULTS={{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/default"
+
+- name: "Add service [cloudera-scm-agent] of CMF_DEFAULTS to service file"
+  lineinfile:
+    path: "/etc/rc.d/init.d/cloudera-scm-agent"
+    regexp: "^CMF_DEFAULTS={{parcel_install_dir}}"
+    line: "CMF_DEFAULTS={{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/default"
+# 添加系统启动服务
+#chkconfig --add cloudera-scm-agent
+#chkconfig --level 35 cloudera-scm-agent on
+#chkconfig --list
+- name: "Add service [cloudera-scm-agent] of add cloudera-scm-agent"
+  shell: "chkconfig --add cloudera-scm-agent"
+  register: rlt_add_service
+
+- name: "Debug service"
+  debug: var=rlt_add_service
+
+- name: "Add service [cloudera-scm-agent] of add cloudera-scm-agent"
+  shell: "chkconfig --level 35 cloudera-scm-agent on"
+  register: rlt_add_service
+
+- name: "Debug service"
+  debug: var=rlt_add_service
+
+- name: "Add service [cloudera-scm-agent] of add cloudera-scm-agent"
+  shell: "chkconfig --list"
+  register: rlt_add_service
+
+- name: "Debug service"
+  debug: var=rlt_add_service
+
+- name: "Uninstall the Cloudera Manager Agent packages of [reset-failed and daemon-reload]"
+  shell: "systemctl reset-failed&&systemctl daemon-reload"
+  when: drop_old_agent
+
+# DO NOT START AGENT, ORELSE WE CAN'T CONFIGURE THE INSTALLATION DATA PACKAGE.
+# sudo systemctl start cloudera-scm-agent
+- name: "Start the Agents"
+  service:
+    name: cloudera-scm-agent
+    state: restarted

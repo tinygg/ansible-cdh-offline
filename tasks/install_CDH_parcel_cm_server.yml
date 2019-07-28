@@ -1,0 +1,129 @@
+---
+
+###################################################
+# parcel_file
+###################################################
+- name: "Install the Cloudera Manager Server packages/[parcels], check cm_gz_file/【parcel_file】/sha_file/json_file"
+  stat:
+    path: "{{parcel_install_dir}}/cloudera/parcel-repo/{{parcel_file}}"
+  register: rlt_parcel
+  when: install_type_PARCEL
+
+- name: "[2].parcel_file debug"
+  debug: var=rlt_parcel
+  when: install_type_PARCEL
+
+- name: "[2].download parcel_file"
+  get_url:
+    url: "{{cdh_parcel_url_cdh}}/{{parcel_file}}"
+    dest: "{{parcel_install_dir}}/cloudera/parcel-repo/{{parcel_file}}"
+    group: cloudera-scm
+    owner: cloudera-scm
+  retries: 4
+  delay: 5
+  when: install_type_PARCEL and not rlt_parcel.stat.exists
+###################################################
+# sha_file
+###################################################
+- name: "Install the Cloudera Manager Server packages/[parcels], check cm_gz_file/parcel_file/【sha_file】/json_file"
+  stat:
+    path: "{{parcel_install_dir}}/cloudera/parcel-repo/{{sha_file}}"
+  register: rlt_sha
+  when: install_type_PARCEL
+
+- name: "[2].sha_file debug"
+  debug: var=rlt_sha
+  when: install_type_PARCEL
+
+- name: "[2].download sha_file"
+  get_url:
+    url: "{{cdh_parcel_url_cdh}}/{{sha_file}}"
+    dest: "{{parcel_install_dir}}/cloudera/parcel-repo/{{sha_file}}"
+    group: cloudera-scm
+    owner: cloudera-scm
+  retries: 4
+  delay: 5
+  when: install_type_PARCEL and not rlt_sha.stat.exists
+###################################################
+# json_file
+###################################################
+- name: "Install the Cloudera Manager Server packages/[parcels], check cm_gz_file/parcel_file/sha_file/【json_file】"
+  stat:
+    path: "{{parcel_install_dir}}/cloudera/parcel-repo/{{json_file}}"
+  register: rlt_json
+  when: install_type_PARCEL
+
+- name: "[2].json_file debug"
+  debug: var=rlt_json
+  when: install_type_PARCEL
+
+- name: "[2].download json file"
+  get_url:
+    url: "{{cdh_parcel_url_cdh}}/{{json_file}}"
+    dest: "{{parcel_install_dir}}/cloudera/parcel-repo/{{json_file}}"
+    group: cloudera-scm
+    owner: cloudera-scm
+  retries: 4
+  delay: 5
+# when: install_type_PARCEL and not rlt_json.stat.exists
+# always download manifest.json
+  when: install_type_PARCEL
+###################################################
+
+###################################################
+# add service [cloudera-scm-server]
+###################################################
+- name: "delete service file"
+  file:
+    path: "/etc/rc.d/init.d/cloudera-scm-server"
+    state: absent
+
+# 设置使用"cloudera-scm-server"为系统启动服务
+#cp /opt/cloudera-manager/cm-5.16.1/etc/init.d/cloudera-scm-server /etc/rc.d/init.d/cloudera-scm-server
+#chown cloudera-scm:cloudera-scm /etc/rc.d/init.d/cloudera-scm-server
+- name: "Add System Service"
+  copy:
+    src: "{{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/init.d/cloudera-scm-server"
+    dest: "/etc/rc.d/init.d/cloudera-scm-server"
+    mode: 0755
+    remote_src: yes
+
+# 修改"CMF_DEFAULTS=${CMF_DEFAULTS:-/etc/default}"的路径,在此之前添加环境变量CMF_DEFAULTS
+#vim /etc/rc.d/init.d/cloudera-scm-server
+#CMF_DEFAULTS=/opt/cloudera-manager/cm-5.16.1/etc/default
+- name: "Add service [cloudera-scm-server] of CMF_DEFAULTS to service file"
+  lineinfile:
+    path: "/etc/rc.d/init.d/cloudera-scm-server"
+    regexp: "^CMF_DEFAULTS=\\$\\{CMF_DEFAULTS"
+    line: "CMF_DEFAULTS={{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/default"
+
+- name: "Add service [cloudera-scm-server] of CMF_DEFAULTS to service file"
+  lineinfile:
+    path: "/etc/rc.d/init.d/cloudera-scm-server"
+    regexp: "^CMF_DEFAULTS={{parcel_install_dir}}"
+    line: "CMF_DEFAULTS={{parcel_install_dir}}/cloudera-manager/cm-{{cdh_version}}/etc/default"
+
+# 添加系统启动服务
+#chkconfig --add cloudera-scm-server
+#chkconfig --level 35 cloudera-scm-server on
+#chkconfig --list
+- name: "Add service [cloudera-scm-server] of add cloudera-scm-server"
+  shell: "chkconfig --add cloudera-scm-server"
+  register: rlt_add_service
+
+- name: "Debug service"
+  debug: var=rlt_add_service
+
+- name: "Add service [cloudera-scm-server] of add chkconfig"
+  shell: "chkconfig --level 35 cloudera-scm-server on"
+  register: rlt_add_service
+
+- name: "Debug service"
+  debug: var=rlt_add_service
+
+- name: "Add service [cloudera-scm-server] of add cloudera-scm-server"
+  shell: "chkconfig --list"
+  register: rlt_add_service
+
+- name: "Debug service"
+  debug: var=rlt_add_service
