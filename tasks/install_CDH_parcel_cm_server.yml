@@ -15,7 +15,7 @@
 
 - name: "[2].download parcel_file"
   get_url:
-    url: "{{cdh_parcel_url_cdh}}/{{ parcel_file }}"
+    url: "{{ cdh_parcel_url_cdh }}/{{ parcel_file }}"
     dest: "{{ parcel_install_dir }}/cloudera/parcel-repo/{{ parcel_file }}"
     group: cloudera-scm
     owner: cloudera-scm
@@ -37,7 +37,7 @@
 
 - name: "[2].download sha_file"
   get_url:
-    url: "{{cdh_parcel_url_cdh}}/{{ sha_file }}"
+    url: "{{ cdh_parcel_url_cdh }}/{{ sha_file }}"
     dest: "{{ parcel_install_dir }}/cloudera/parcel-repo/{{ sha_file }}"
     group: cloudera-scm
     owner: cloudera-scm
@@ -59,7 +59,7 @@
 
 - name: "[2].download json file"
   get_url:
-    url: "{{cdh_parcel_url_cdh}}/{{ json_file }}"
+    url: "{{ cdh_parcel_url_cdh }}/{{ json_file }}"
     dest: "{{ parcel_install_dir }}/cloudera/parcel-repo/{{ json_file }}"
     group: cloudera-scm
     owner: cloudera-scm

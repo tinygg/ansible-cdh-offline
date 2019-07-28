@@ -162,7 +162,7 @@
 - name: "[step 05] Set up the Cloudera Manager Database"
   shell: >
     "{{ parcel_install_dir }}/cloudera-manager/cm-{{ cdh_version }}/share/cmf/schema/scm_prepare_database.sh
-    {{db_type}} {{ db_name }} {{ db_user }} {{ db_pass }} 
+    {{ db_type }} {{ db_name }} {{ db_user }} {{ db_pass }}
     --host {{ db_host }} --port {{ db_port }}"
   when: cdh_manager and install_type_PARCEL
 
@@ -197,7 +197,7 @@
 - name: "[step 07] Set Up a Cluster"
   debug:
     msg:
-    - "Login and setup the cluster http://{{server_host}}:7180 with username/password = (admin/admin) by default."
+    - "Login and setup the cluster http://{{ server_host }}:7180 with username/password = (admin/admin) by default."
     - "1. Setup #1) Terms and Conditions of End User => Check |Agree|, then Next"
     - "2. Setup #2) Which Version to deploy? => Click |Cloudera Express|, then Next"
     - "3. Setup #3) List of all the packages and licenses => Click Next"
